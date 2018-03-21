@@ -15,3 +15,7 @@ script:
   - cp config/database.yml.example config/database.yml
   - docker-compose build
   - docker-compose run test
+
+notifications:
+  email:
+    - macchiang@gmail.com
