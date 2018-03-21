@@ -8,7 +8,11 @@ WORKDIR ${APP_PATH}
 
 RUN apt-get update && apt-get install -y postgresql-client patch bzip2 gawk g++ gcc make libc6-dev patch zlib1g-dev libyaml-dev autoconf libgmp-dev libgdbm-dev libncurses5-dev automake libtool bison pkg-config libffi-dev libgmp-dev libreadline-dev libssl-dev redis-tools --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
+
 ADD Gemfile* ${APP_PATH}/
+RUN chown -R nobody:nogroup /app  
+USER nobody
+
 RUN set -x && gem install bundler && bundle install --without production 
 
 ADD . ${APP_PATH}
