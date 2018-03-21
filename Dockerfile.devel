@@ -10,11 +10,14 @@ RUN apt-get update && apt-get install -y postgresql-client nodejs patch bzip2 ga
 
 
 ADD Gemfile* ${APP_PATH}/
-RUN chown -R nobody:nogroup /app  
+
 USER nobody
 
 RUN set -x && gem install bundler && bundle install --without production 
 
 ADD . ${APP_PATH}
+
+RUN chown -R nobody:nogroup /app  
+
 
 CMD ["rails", "server", "-b", "0.0.0.0"]
