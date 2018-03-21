@@ -6,7 +6,7 @@ ENV APP_PATH /app
 RUN mkdir -p ${APP_PATH}
 WORKDIR ${APP_PATH}
 
-RUN apt-get update && apt-get install -y postgresql-client patch bzip2 gawk g++ gcc make libc6-dev patch zlib1g-dev libyaml-dev autoconf libgmp-dev libgdbm-dev libncurses5-dev automake libtool bison pkg-config libffi-dev libgmp-dev libreadline-dev libssl-dev redis-tools --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y postgresql-client nodejs patch bzip2 gawk g++ gcc make libc6-dev patch zlib1g-dev libyaml-dev autoconf libgmp-dev libgdbm-dev libncurses5-dev automake libtool bison pkg-config libffi-dev libgmp-dev libreadline-dev libssl-dev redis-tools --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 
 ADD Gemfile* ${APP_PATH}/
