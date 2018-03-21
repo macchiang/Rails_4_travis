@@ -18,6 +18,6 @@ script:
   - docker-compose build
   - docker-compose run test
 
-notifications:
-  email:
-    - macchiang@gmail.com
+# notifications:
+#   email:
+#     - macchiang@gmail.com
