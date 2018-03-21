@@ -1,0 +1,12 @@
+version: '3'
+services:
+  test:
+    tty: true
+    stdin_open: true
+    build: 
+      context: .
+      dockerfile: Dockerfile.devel
+    image: sample_app_rails:v1
+    command: sh -c "bundle exec rake db:migrate && bundle exec rake db:test:prepare && bundle exec rspec spec/"
+    volumes:
+      - .:/app
