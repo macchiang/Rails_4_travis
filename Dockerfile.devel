@@ -15,4 +15,4 @@ RUN set -x && gem install bundler && bundle install --without production --syste
 
 ADD . ${APP_PATH}
 
-CMD ["rails", "server", "-b", "0.0.0.0"]
+CMD ["rails", "server", "-b", "0.0.0.0", "-p","3000"]

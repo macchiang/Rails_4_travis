@@ -1,25 +1,26 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name:  rails_4_travis
+  name:  rails-4-travis
 spec:
   selector:
-    app:  rails_4_travis
+    app:  rails-4-travis
   type:  LoadBalancer
   ports:
   - port:  80
+    targetPort: 3000
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: rails_4_travis
+  name: rails-4-travis
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: rails_4_travis 
+        app: rails-4-travis 
     spec:
       containers:
-      - name: rails_4_travis
+      - name: rails-4-travis
         image: us.gcr.io/easyship-test/rails_4_travis:v1
