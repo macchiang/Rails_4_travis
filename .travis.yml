@@ -36,19 +36,11 @@ install:
 # Set the correct project to deploy to
 - gcloud config set project easyship-test
 - gcloud -q components install kubectl
-jobs:
-  include:
-        - stage: Build image    
-          script:
-          - cp config/database.yml.example config/database.yml
-          - docker-compose build
-        - stage: Push Image to GCP
-          script:
-          - docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:${TAG}
-          - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
-        - stage: Test
-          script:        
-          - docker-compose run test
-        - stage: Deploy to K8S
-          script:
-          - kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}
+ 
+script:
+- cp config/database.yml.example config/database.yml
+- docker-compose build
+- docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:${TAG}
+- gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
+- docker-compose run test
+- kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}
