@@ -32,10 +32,13 @@ install:
 - gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
-- docker-compose build
+- docker pull us.gcr.io/easyship-test/rails_4_travis:latest
+- docker build -f Dockerfile.devel -t rails_4_travis:v1 --cache-from us.gcr.io/easyship-test/rails_4_travis:latest 
 script:
 - docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
+- docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:latest
+- gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:latest
 - docker-compose run test
 after_success:
 - | 
@@ -43,8 +46,11 @@ after_success:
   sed 's/\$IMAGE'"/us.gcr.io\/easyship-test\/rails_4_travis:${TAG}/g" | \
   kubectl apply -f -
 - |
+    kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' | \
+    grep rails-db-migrate   
+- |
   kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' | \
   grep rails-db-migrate | \ 
-  xargs kubectl attach -it
+  xargs -i kubectl attach -it {}
 - kubectl delete job rails-db-migrate
 - kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}
