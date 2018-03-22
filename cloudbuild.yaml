@@ -1,0 +1,22 @@
+steps:
+  - name: 'ubuntu'
+    args: ['bash','-c', 'cp config/database.yml.example config/database.yml']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us.gcr.io/$PROJECT_ID/${_REPO}:$TAG_NAME', '.']
+  - name: 'gcr.io/$PROJECT_ID/docker-compose'
+    args: ['run','test']      
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push','us.gcr.io/$PROJECT_ID/${_REPO}:$TAG_NAME']  
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+    - set
+    - image
+    - deployment
+    - ${_REPO}
+    - ${_REPO}=us.gcr.io/$PROJECT_ID/${_REPO}:$TAG_NAME      
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=cluster-1'     
+images: ["us.gcr.io/$PROJECT_ID/${_REPO}:$TAG_NAME"]  
+substitutions:
+  _REPO: rails_4_travis

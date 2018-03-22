@@ -6,7 +6,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile.devel
-    image: sample_app_rails:v1
+    image: rails_4_travis:v1
     command: sh -c "bundle exec rake db:migrate && bundle exec rake db:test:prepare && bundle exec rspec spec/"
     volumes:
       - .:/app
