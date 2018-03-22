@@ -1,6 +1,8 @@
 
 # This is my Travis CI test project for Rails.
 
+[![Build Status](https://travis-ci.org/macchiang/Rails_4_travis.svg?branch=master)](https://travis-ci.org/macchiang/Rails_4_travis)
+
 # Ruby on Rails Tutorial: sample application
 
 **This repository is not current or maintained. See [www.railstutorial.org/help](https://www.railstutorial.org/help) for the current version of the sample app.**

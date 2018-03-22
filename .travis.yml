@@ -23,15 +23,19 @@ before_install:
 - tar -xzf credentials.tar.gz
 - mkdir -p lib
 - gcloud auth activate-service-account --key-file client-secret.json
+- set -x
 - if [[ -z "${TRAVIS_TAG}" ]]; then TAG=v${TRAVIS_BUILD_NUMBER}; else TAG=${TRAVIS_TAG};
   fi
 install:
 - gcloud config set project easyship-test
 - gcloud -q components install kubectl
-script:
+- gcloud container clusters get-credentials cluster-1
+before_script:
 - cp config/database.yml.example config/database.yml
 - docker-compose build
+script:
 - docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - docker-compose run test
+after_success:
 - kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}

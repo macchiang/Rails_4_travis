@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y postgresql-client nodejs patch bzip2 ga
 
 ADD Gemfile* ${APP_PATH}/
 
-RUN set -x && gem install bundler && bundle install --without production --system
+RUN set -x && gem install bundler && bundle install --without production --system --jobs 20
 
 ADD . ${APP_PATH}
 
