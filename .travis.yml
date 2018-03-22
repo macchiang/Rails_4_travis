@@ -34,18 +34,19 @@ install:
 before_script:
 - cp config/database.yml.example config/database.yml
 - if [ -f docker/image.tar.gz ];then gzip -dc docker/image.tar.gz | docker load; fi
-- docker build . -f Dockerfile.devel -t rails_4_travis:latest 
-- docker save rails_4_travis:latest | gzip > docker/image.tar.gz
+- docker build . -f Dockerfile.devel -t rails_4_travis:latest --cache-from rails_4_travis:v1 
+- docker tag rails_4_travis:latest rails_4_travis:v1 
+- docker save rails_4_travis:v1 | gzip > docker/image.tar.gz
 script:
 - docker tag rails_4_travis:latest us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - docker-compose run test
 after_success:
+- kubectl delete job rails-db-migrate
 - | 
   cat rails-db-migrate-job.yaml.tmpl | \
   sed 's/\$IMAGE'"/us.gcr.io\/easyship-test\/rails_4_travis:${TAG}/g" | \
   kubectl apply -f -
-- kubectl delete job rails-db-migrate || true
 - kubectl get po | grep rails-db-migrate | awk {'print $1'}  
 - kubectl attach -it $(kubectl get po | grep rails-db-migrate | awk {'print $1'})
 - kubectl delete job rails-db-migrate
