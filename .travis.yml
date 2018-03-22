@@ -28,8 +28,9 @@ before_install:
 - echo ${TAG}
 install:
 - gcloud config set project easyship-test
+- gcloud config set compute/zone us-east1-b
 - gcloud -q components install kubectl
-- gcloud container clusters get-credentials cluster-1 --zone us-east1-b
+- gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
 - docker-compose build
