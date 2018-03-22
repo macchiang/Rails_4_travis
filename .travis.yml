@@ -34,9 +34,8 @@ install:
 before_script:
 - cp config/database.yml.example config/database.yml
 - if [ -f docker/image.tar.gz ];then gzip -dc docker/image.tar.gz | docker load; fi
-- docker build . -f Dockerfile.devel -t rails_4_travis:latest --cache-from rails_4_travis:v1 
-- docker tag rails_4_travis:latest rails_4_travis:v1 
-- docker save rails_4_travis:v1 | gzip > docker/image.tar.gz
+- docker build . -f Dockerfile.devel -t rails_4_travis:latest 
+- if [ ! -f docker/image.tar.gz ];then docker save ruby:2.0.0 | gzip > docker/image.tar.gz; fi
 script:
 - docker tag rails_4_travis:latest us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
@@ -56,5 +55,5 @@ after_success:
     if [ $A -eq 0 ]; then break; fi
   done
 - kubectl attach -it $(kubectl get po | grep rails-db-migrate | awk {'print $1'})
-- kubectl delete job rails-db-migrate
 - kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}
+- kubectl rollout status deployment rails-4-travis
