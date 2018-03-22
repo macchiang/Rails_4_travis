@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rails-db-migrate
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      containers:
+      - name: rails-db-migrate
+        image: $IMAGE
+        command: ["bash",  "-c", "bin/rake db:migrate RAILS_ENV=development"]
+      restartPolicy: Never

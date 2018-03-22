@@ -40,4 +40,12 @@ script:
 - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - docker-compose run test
 after_success:
+- | 
+  cat rails-db-migrate-job.yaml.tmpl | \
+  sed 's/\$IMAGE'"/us.gcr.io\/easyship-test\/rails_4_travis:${TAG}/g" | \
+  kubectl apply -f -
+- |
+  kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' | \
+  grep rails-db-migrate | \ 
+  xargs kubectl attach -it
 - kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}
