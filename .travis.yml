@@ -28,9 +28,9 @@ before_install:
 # Here we use the decrypted service account credentials to authenticate the command line tool
 - gcloud auth activate-service-account --key-file client-secret.json
 - if [[ -z "${TRAVIS_TAG}" ]]; then
-    TAG=v${TRAVIS_BUILD_NUMBER}
+    TAG=v${TRAVIS_BUILD_NUMBER};
   else
-    TAG=${TRAVIS_TAG}
+    TAG=${TRAVIS_TAG};
   fi
 install:
 # Set the correct project to deploy to
