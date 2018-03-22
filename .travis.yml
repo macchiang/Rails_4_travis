@@ -32,5 +32,5 @@ script:
 - docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:${TRAVIS_TAG}
 - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TRAVIS_TAG}
 - docker-compose run test
-deploy:
+before_deploy:
 - kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TRAVIS_TAG}
