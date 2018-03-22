@@ -7,7 +7,7 @@ env:
 cache:
   directories:
   - "$HOME/google-cloud-sdk/"
-  - docker
+  - "$HOME/docker/"
 before_install:
 - openssl aes-256-cbc -K $encrypted_746fc4fff1b7_key -iv $encrypted_746fc4fff1b7_iv
   -in credentials.tar.gz.enc -out credentials.tar.gz -d
@@ -33,9 +33,10 @@ install:
 - gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
-- if [ -f docker/image.tar.gz ];then gzip -dc docker/image.tar.gz | docker load; fi
+- rm $HOME/docker/image.tar.gz
+- if [ -f docker/image.tar.gz ];then gzip -dc $HOME/docker/image.tar.gz | docker load; fi
 - docker build . -f Dockerfile.devel -t rails_4_travis:latest 
-- if [ ! -f docker/image.tar.gz ];then docker save ruby:2.0.0 | gzip > docker/image.tar.gz; fi
+- if [ ! -f $HOME/docker/image.tar.gz ];then docker save ruby:2.0.0 | gzip > $HOME/docker/image.tar.gz; fi
 script:
 - docker tag rails_4_travis:latest us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
@@ -55,5 +56,5 @@ after_success:
     if [ $A -eq 0 ]; then break; fi
   done
 - kubectl attach -it $(kubectl get po | grep rails-db-migrate | awk {'print $1'})
-- kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}
+- kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG} --record
 - kubectl rollout status deployment rails-4-travis
