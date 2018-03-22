@@ -33,13 +33,12 @@ install:
 - gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
-- gcloud docker --- pull us.gcr.io/easyship-test/rails_4_travis:latest
-- docker build -f Dockerfile.devel -t rails_4_travis:v1 --cache-from us.gcr.io/easyship-test/rails_4_travis:latest 
+- if [ -f docker/image.tar.gz ];then gzip -dc docker/image.tar.gz | docker load; fi
+- docker build -f Dockerfile.devel -t rails_4_travis:latest 
+- docker save rails_4_travis:latest | gzip > docker/image.tar.gz
 script:
-- docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:${TAG}
+- docker tag rails_4_travis:latest us.gcr.io/easyship-test/rails_4_travis:${TAG}
 - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
-- docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:latest
-- gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:latest
 - docker-compose run test
 after_success:
 - | 
