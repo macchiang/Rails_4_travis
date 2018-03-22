@@ -27,15 +27,28 @@ before_install:
 - mkdir -p lib
 # Here we use the decrypted service account credentials to authenticate the command line tool
 - gcloud auth activate-service-account --key-file client-secret.json
+- if [[ -z "${TRAVIS_TAG}" ]]; then
+    TAG=v${TRAVIS_BUILD_NUMBER}
+  else
+    TAG=${TRAVIS_TAG}
+  fi
 install:
 # Set the correct project to deploy to
 - gcloud config set project easyship-test
 - gcloud -q components install kubectl
-script:
-- cp config/database.yml.example config/database.yml
-- docker-compose build
-- docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:${TRAVIS_TAG}
-- gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TRAVIS_TAG}
-- docker-compose run test
-before_deploy:
-- kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TRAVIS_TAG}
+jobs:
+  include:
+        - stage: Build image    
+          script:
+          - cp config/database.yml.example config/database.yml
+          - docker-compose build
+        - stage: Push Image to GCP
+          script:
+          - docker tag rails_4_travis:v1 us.gcr.io/easyship-test/rails_4_travis:${TAG}
+          - gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
+        - stage: Test
+          script:        
+          - docker-compose run test
+        - stage: Deploy to K8S
+          script:
+          - kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}
