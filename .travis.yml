@@ -45,12 +45,8 @@ after_success:
   cat rails-db-migrate-job.yaml.tmpl | \
   sed 's/\$IMAGE'"/us.gcr.io\/easyship-test\/rails_4_travis:${TAG}/g" | \
   kubectl apply -f -
-- |
-    kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' | \
-    grep rails-db-migrate   
-- |
-  kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' | \
-  grep rails-db-migrate | \ 
-  xargs -i kubectl attach -it {}
+- kubectl delete job rails-db-migrate || true
+- kubectl get po | grep rails-db-migrate | awk {'print $1'}  
+- kubectl attach -it $(kubectl get po | grep rails-db-migrate | awk {'print $1'})
 - kubectl delete job rails-db-migrate
 - kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG}
