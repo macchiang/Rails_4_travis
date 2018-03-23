@@ -9,13 +9,12 @@ env:
   - ZONE=us-east1-b
   - BASE_IMAGE=ruby:2.0.0
   - IMAGE=rails-4-travis
-  - PROD_BRANCH
   - REPO=us.gcr.io
   - DEPLOYMENT_NAME=rails-4-travis
 cache:
   directories:
   - "$HOME/google-cloud-sdk/"
-  - "$HOME/docker/"
+  # - "$HOME/docker/"
 before_install:
 - openssl aes-256-cbc -K $encrypted_746fc4fff1b7_key -iv $encrypted_746fc4fff1b7_iv
   -in credentials.tar.gz.enc -out credentials.tar.gz -d
@@ -41,10 +40,10 @@ install:
 - gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
-- export CACHED_IMAGE=$HOME/docker/image.tar.gz
-- if [ -f $CACHED_IMAGE ];then gzip -dc $CACHED_IMAGE | docker load; fi
+# - export CACHED_IMAGE=$HOME/docker/image.tar.gz
+# - if [ -f $CACHED_IMAGE ];then gzip -dc $CACHED_IMAGE | docker load; fi
 - docker build . -f Dockerfile.devel -t ${IMAGE}:latest 
-- if [ ! -f $CACHED_IMAGE ];then docker save $BASE_IMAGE | gzip > $CACHED_IMAGE; fi
+# - if [ ! -f $CACHED_IMAGE ];then docker save $BASE_IMAGE | gzip > $CACHED_IMAGE; fi
 script:
 - docker-compose run test
 - docker tag ${IMAGE}:latest ${REPO}/${PROJECT}/${IMAGE}:${TAG}
