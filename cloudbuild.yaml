@@ -1,5 +1,7 @@
 steps:
   - name: 'ubuntu'
+    args: ['bash','-c', 'if [[ $TAG_NAME != ${_TAG_PATTERN} ]];then echo "Tag pattern mismatch!!";exit 1; fi']
+  - name: 'ubuntu'
     args: ['bash','-c', 'cp config/database.yml.example config/database.yml']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', '${_REPO}/$PROJECT_ID/${_IMAGE}:$TAG_NAME', '.']
@@ -34,3 +36,4 @@ substitutions:
   _REPO: us.gcr.io
   _ZONE: us-east1-b
   _CLUSTER: cluster-1
+  _TAG_PATTERN: "release"*
