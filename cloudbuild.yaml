@@ -2,21 +2,35 @@ steps:
   - name: 'ubuntu'
     args: ['bash','-c', 'cp config/database.yml.example config/database.yml']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us.gcr.io/$PROJECT_ID/${_REPO}:$TAG_NAME', '.']
+    args: ['build', '-t', '${_REPO}/$PROJECT_ID/${_IMAGE}:$TAG_NAME', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['tag', '${_REPO}/$PROJECT_ID/${_IMAGE}:$TAG_NAME', '${_IMAGE}:latest']    
   - name: 'gcr.io/$PROJECT_ID/docker-compose'
     args: ['run','test']      
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push','us.gcr.io/$PROJECT_ID/${_REPO}:$TAG_NAME']  
-  - name: 'gcr.io/cloud-builders/kubectl'
+    args: ['push','${_REPO}/$PROJECT_ID/${_IMAGE}:$TAG_NAME']  
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
     args:
-    - set
-    - image
-    - deployment
-    - ${_REPO}
-    - ${_REPO}=us.gcr.io/$PROJECT_ID/${_REPO}:$TAG_NAME      
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=cluster-1'     
-images: ["us.gcr.io/$PROJECT_ID/${_REPO}:$TAG_NAME"]  
+    - '-c'
+    - |
+      gcloud components install kubectl
+      gcloud container clusters get-credentials ${_CLUSTER} --zone ${_ZONE}
+      kubectl delete job rails-db-migrate || true
+      cat rails-db-migrate-job.yaml.tmpl | sed 's/\$IMAGE'"/${_REPO}\/$PROJECT_ID\/${_IMAGE}:$TAG_NAME/g" |
+      A=600
+      until kubectl get po -a | grep rails-db-migrate | grep Completed;
+      do
+        sleep 1;
+        A=`expr $A - 1`;
+        if [ $A -eq 0 ]; then exit 1; fi
+      done
+      kubectl logs $(kubectl get po -a | grep rails-db-migrate | awk {'print $1'})      
+      kubectl set image deployment ${_IMAGE} ${_IMAGE}=${_REPO}/$PROJECT_ID/${_IMAGE}:$TAG_NAME  
+      kubectl rollout status deployment ${_IMAGE}   
+images: ["${_REPO}/$PROJECT_ID/${_IMAGE}:$TAG_NAME"]  
 substitutions:
-  _REPO: rails-4-travis
+  _IMAGE: rails-4-travis
+  _REPO: us.gcr.io
+  _ZONE: us-east1-b
+  _CLUSTER: cluster-1
