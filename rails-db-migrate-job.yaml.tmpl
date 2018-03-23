@@ -8,6 +8,6 @@ spec:
     spec:
       containers:
       - name: rails-db-migrate
-        image: $IMAGE
+        image: IMAGE
         command: ["bash",  "-c", "bin/rake db:migrate RAILS_ENV=development"]
       restartPolicy: Never
