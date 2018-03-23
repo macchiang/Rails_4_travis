@@ -4,6 +4,11 @@ services:
 - docker
 env:
 - DOCKER_COMPOSE_VERSION=1.20.0
+- PROJECT=easyship-test
+- ZONE=us-east1-b
+- IMAGE=rails-4-travis
+- REPO=us.gcr.io
+- DEPLOYMENT_NAME=rails-4-travis
 cache:
   directories:
   - "$HOME/google-cloud-sdk/"
@@ -27,24 +32,24 @@ before_install:
 - if [[ -z "${TRAVIS_TAG}" ]]; then TAG=v${TRAVIS_BUILD_NUMBER}; else TAG=${TRAVIS_TAG};
   fi
 install:
-- gcloud config set project easyship-test
-- gcloud config set compute/zone us-east1-b
+- gcloud config set {project} ${PROJECT}
+- gcloud config set compute/zone $ZONE
 - gcloud -q components install kubectl
 - gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
 - if [ -f docker/image.tar.gz ];then gzip -dc $HOME/docker/image.tar.gz | docker load; fi
-- docker build . -f Dockerfile.devel -t rails_4_travis:latest 
+- docker build . -f Dockerfile.devel -t ${IMAGE}:latest 
 - if [ ! -f $HOME/docker/image.tar.gz ];then docker save ruby:2.0.0 | gzip > $HOME/docker/image.tar.gz; fi
 script:
-- docker tag rails_4_travis:latest us.gcr.io/easyship-test/rails_4_travis:${TAG}
-- gcloud docker -- push us.gcr.io/easyship-test/rails_4_travis:${TAG}
+- docker tag ${IMAGE}:latest ${REPO}/${PROJECT}/${IMAGE}:${TAG}
+- gcloud docker -- push ${REPO}/${PROJECT}/${IMAGE}:${TAG}
 - docker-compose run test
 after_success:
 - kubectl delete job rails-db-migrate
 - | 
   cat rails-db-migrate-job.yaml.tmpl | \
-  sed 's/\$IMAGE'"/us.gcr.io\/easyship-test\/rails_4_travis:${TAG}/g" | \
+  sed "s/\${IMAGE}/${REPO}\/${PROJECT}\/${IMAGE}:${TAG}/g" | \
   kubectl apply -f -
 - A=60
 - until kubectl get po | grep rails-db-migrate | grep Running;
@@ -55,5 +60,5 @@ after_success:
     if [ $A -eq 0 ]; then break; fi
   done
 - kubectl attach -it $(kubectl get po | grep rails-db-migrate | awk {'print $1'})
-- kubectl set image deployment rails-4-travis rails-4-travis=us.gcr.io/easyship-test/rails_4_travis:${TAG} --record
-- kubectl rollout status deployment rails-4-travis
+- kubectl set image deployment ${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=${REPO}/${PROJECT}/${IMAGE}:${TAG} --record
+- kubectl rollout status deployment ${DEPLOYMENT_NAME}
