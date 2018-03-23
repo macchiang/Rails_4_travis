@@ -5,62 +5,65 @@ services:
 env:
   global:
   - DOCKER_COMPOSE_VERSION=1.20.0
-  - PROJECT=easyship-test
-  - ZONE=us-east1-b
-  - BASE_IMAGE=ruby:2.0.0
+  # - PROJECT=easyship-test
+  # - ZONE=us-east1-b
+  # - BASE_IMAGE=ruby:2.0.0
   - IMAGE=rails-4-travis
-  - REPO=us.gcr.io
-  - DEPLOYMENT_NAME=rails-4-travis
-cache:
-  directories:
-  - "$HOME/google-cloud-sdk/"
-  - "$HOME/docker/"
+  # - REPO=us.gcr.io
+  # - DEPLOYMENT_NAME=rails-4-travis
+# cache:
+#   directories:
+#   - "$HOME/google-cloud-sdk/"
+  # - "$HOME/docker/"
 before_install:
-- openssl aes-256-cbc -K $encrypted_746fc4fff1b7_key -iv $encrypted_746fc4fff1b7_iv
-  -in credentials.tar.gz.enc -out credentials.tar.gz -d
+# - openssl aes-256-cbc -K $encrypted_746fc4fff1b7_key -iv $encrypted_746fc4fff1b7_iv
+#   -in credentials.tar.gz.enc -out credentials.tar.gz -d
 - sudo rm /usr/local/bin/docker-compose
 - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname
   -s`-`uname -m` > docker-compose
 - chmod +x docker-compose
 - sudo mv docker-compose /usr/local/bin
-- gcloud version || true
-- if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export
-  CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
-- source $HOME/google-cloud-sdk/path.bash.inc
-- gcloud version
-- tar -xzf credentials.tar.gz
-- mkdir -p lib
-- gcloud auth activate-service-account --key-file client-secret.json
-- if [[ -z "${TRAVIS_TAG}" ]]; then TAG=v${TRAVIS_BUILD_NUMBER}; else TAG=${TRAVIS_TAG};
-  fi
-install:
-- gcloud config set project ${PROJECT}
-- gcloud config set compute/zone ${ZONE}
-- gcloud -q components install kubectl
-- gcloud container clusters get-credentials cluster-1
+- TAG=v${TRAVIS_BUILD_NUMBER}
+# - gcloud version || true
+# - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export
+#   CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
+# - source $HOME/google-cloud-sdk/path.bash.inc
+# - gcloud version
+# - tar -xzf credentials.tar.gz
+# - mkdir -p lib
+# - gcloud auth activate-service-account --key-file client-secret.json
+# - if [[ -z "${TRAVIS_TAG}" ]]; then TAG=v${TRAVIS_BUILD_NUMBER}; else TAG=${TRAVIS_TAG};
+#   fi
+# install:
+# - gcloud config set project ${PROJECT}
+# - gcloud config set compute/zone ${ZONE}
+# - gcloud -q components install kubectl
+# - gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
-- if [ -f docker/image.tar.gz ];then gzip -dc $HOME/docker/image.tar.gz | docker load; fi
+# - export CACHED_IMAGE=$HOME/docker/image.tar.gz
+# - if [ -f $CACHED_IMAGE ];then gzip -dc $CACHED_IMAGE | docker load; fi
 - docker build . -f Dockerfile.devel -t ${IMAGE}:latest 
-- if [ ! -f $HOME/docker/image.tar.gz ];then docker save $BASE_IMAGE | gzip > $HOME/docker/image.tar.gz; fi
+# - if [ ! -f $CACHED_IMAGE ];then docker save $BASE_IMAGE | gzip > $CACHED_IMAGE; fi
 script:
-- docker tag ${IMAGE}:latest ${REPO}/${PROJECT}/${IMAGE}:${TAG}
-- gcloud docker -- push ${REPO}/${PROJECT}/${IMAGE}:${TAG}
 - docker-compose run test
-after_success:
-- kubectl delete job rails-db-migrate
-- | 
-  cat rails-db-migrate-job.yaml.tmpl | \
-  sed 's/\$IMAGE'"/${REPO}\/${PROJECT}\/${IMAGE}:${TAG}/g" | \
-  kubectl apply -f -
-- A=60
-- until kubectl get po | grep rails-db-migrate | grep Running;
-  do
-    sleep 1;
-    kubectl get po | grep rails-db-migrate;
-    A=`expr $A - 1`;
-    if [ $A -eq 0 ]; then break; fi
-  done
-- kubectl attach -it $(kubectl get po | grep rails-db-migrate | awk {'print $1'})
-- kubectl set image deployment ${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=${REPO}/${PROJECT}/${IMAGE}:${TAG} --record
-- kubectl rollout status deployment ${DEPLOYMENT_NAME}
+# - docker tag ${IMAGE}:latest ${REPO}/${PROJECT}/${IMAGE}:${TAG}
+# - gcloud docker -- push ${REPO}/${PROJECT}/${IMAGE}:${TAG}
+# - kubectl delete job rails-db-migrate || true
+# - | 
+#   cat rails-db-migrate-job.yaml.tmpl | \
+#   sed 's/\$IMAGE'"/${REPO}\/${PROJECT}\/${IMAGE}:${TAG}/g" | \
+#   kubectl apply -f -
+# - A=600
+# - until kubectl get po -a | grep rails-db-migrate | grep Completed;
+#   do
+#     sleep 1;
+#     A=`expr $A - 1`;
+#     if [ $A -eq 0 ]; then exit 1; fi
+#   done
+# - kubectl logs $(kubectl get po -a | grep rails-db-migrate | awk {'print $1'})
+# after_success:
+# - kubectl set image deployment ${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=${REPO}/${PROJECT}/${IMAGE}:${TAG} --record
+# - kubectl rollout status deployment ${DEPLOYMENT_NAME}
+notifications:
+  slack: easyship:1zgOYM6G2x45grjQvGzGCCYY
