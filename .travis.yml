@@ -51,7 +51,7 @@ after_success:
 - kubectl delete job rails-db-migrate
 - | 
   cat rails-db-migrate-job.yaml.tmpl | \
-  sed "s/\${IMAGE}/${REPO}\/${PROJECT}\/${IMAGE}:${TAG}/g" | \
+  sed 's/\$IMAGE'"/${REPO}\/${PROJECT}\/${IMAGE}:${TAG}/g" | \
   kubectl apply -f -
 - A=60
 - until kubectl get po | grep rails-db-migrate | grep Running;
