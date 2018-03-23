@@ -53,15 +53,14 @@ script:
   cat rails-db-migrate-job.yaml.tmpl | \
   sed 's/\$IMAGE'"/${REPO}\/${PROJECT}\/${IMAGE}:${TAG}/g" | \
   kubectl apply -f -
-- A=60
-- until kubectl get po | grep rails-db-migrate | grep Running;
+- A=600
+- until kubectl get po -a | grep rails-db-migrate | grep Completed;
   do
     sleep 1;
-    kubectl get po | grep rails-db-migrate;
     A=`expr $A - 1`;
-    if [ $A -eq 0 ]; then break; fi
+    if [ $A -eq 0 ]; then exit 1; fi
   done
-- kubectl attach -it $(kubectl get po | grep rails-db-migrate | awk {'print $1'})
+- kubectl logs $(kubectl get po -a | grep rails-db-migrate | awk {'print $1'})
 after_success:
 - kubectl set image deployment ${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=${REPO}/${PROJECT}/${IMAGE}:${TAG} --record
 - kubectl rollout status deployment ${DEPLOYMENT_NAME}
