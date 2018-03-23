@@ -36,4 +36,4 @@ substitutions:
   _REPO: us.gcr.io
   _ZONE: us-east1-b
   _CLUSTER: cluster-1
-  _TAG_PATTERN: "release"*
+  _TAG_PATTERN: \"release\"*
