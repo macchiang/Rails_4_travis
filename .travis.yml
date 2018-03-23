@@ -40,9 +40,10 @@ install:
 - gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
-- if [ -f docker/image.tar.gz ];then gzip -dc $HOME/docker/image.tar.gz | docker load; fi
+- export CACHED_IMAGE=$HOME/docker/image.tar.gz
+- if [ -f $CACHED_IMAGE ];then gzip -dc $CACHED_IMAGE | docker load; fi
 - docker build . -f Dockerfile.devel -t ${IMAGE}:latest 
-- if [ ! -f $HOME/docker/image.tar.gz ];then docker save $BASE_IMAGE | gzip > $HOME/docker/image.tar.gz; fi
+- if [ ! -f $CACHED_IMAGE ];then docker save $BASE_IMAGE | gzip > $CACHED_IMAGE; fi
 script:
 - docker tag ${IMAGE}:latest ${REPO}/${PROJECT}/${IMAGE}:${TAG}
 - gcloud docker -- push ${REPO}/${PROJECT}/${IMAGE}:${TAG}
