@@ -18,7 +18,7 @@ steps:
     - |
       gcloud components install kubectl
       gcloud container clusters get-credentials ${_CLUSTER} --zone ${_ZONE}
-      rails-db-migrate.sh
+      bash rails-db-migrate.sh
       kubectl set image deployment ${_PROJECT} ${_PROJECT}=${_REPO}/$PROJECT_ID/${_PROJECT}:v1  
       kubectl rollout status deployment ${_PROJECT}
     env:
