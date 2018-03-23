@@ -9,6 +9,7 @@ env:
   - ZONE=us-east1-b
   - BASE_IMAGE=ruby:2.0.0
   - IMAGE=rails-4-travis
+  - PROD_BRANCH
   - REPO=us.gcr.io
   - DEPLOYMENT_NAME=rails-4-travis
 cache:
@@ -45,11 +46,10 @@ before_script:
 - docker build . -f Dockerfile.devel -t ${IMAGE}:latest 
 - if [ ! -f $CACHED_IMAGE ];then docker save $BASE_IMAGE | gzip > $CACHED_IMAGE; fi
 script:
+- docker-compose run test
 - docker tag ${IMAGE}:latest ${REPO}/${PROJECT}/${IMAGE}:${TAG}
 - gcloud docker -- push ${REPO}/${PROJECT}/${IMAGE}:${TAG}
-- docker-compose run test
-after_success:
-- kubectl delete job rails-db-migrate
+- kubectl delete job rails-db-migrate || true
 - | 
   cat rails-db-migrate-job.yaml.tmpl | \
   sed 's/\$IMAGE'"/${REPO}\/${PROJECT}\/${IMAGE}:${TAG}/g" | \
@@ -63,5 +63,8 @@ after_success:
     if [ $A -eq 0 ]; then break; fi
   done
 - kubectl attach -it $(kubectl get po | grep rails-db-migrate | awk {'print $1'})
+after_success:
 - kubectl set image deployment ${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=${REPO}/${PROJECT}/${IMAGE}:${TAG} --record
 - kubectl rollout status deployment ${DEPLOYMENT_NAME}
+notifications:
+  slack: easyship:1zgOYM6G2x45grjQvGzGCCYY
