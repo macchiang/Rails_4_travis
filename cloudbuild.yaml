@@ -1,6 +1,6 @@
 steps:
   - name: 'ubuntu'
-    args: ['bash','-c', 'if [[ $$BRANCH_NAME != ${_BRANCH} ]];then echo "Branch mismatch!!";exit 1; fi']
+    args: ['bash','-c', 'if [ $BRANCH_NAME != "${_BRANCH}" ];then echo "Branch mismatch!!";exit 1; fi']
   - name: 'ubuntu'
     args: ['bash','-c', 'cp config/database.yml.example config/database.yml']
   - name: 'gcr.io/cloud-builders/docker'
