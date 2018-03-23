@@ -4,7 +4,7 @@ steps:
   - name: 'ubuntu'
     args: ['bash','-c', 'cp config/database.yml.example config/database.yml']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', '${_REPO}/$PROJECT_ID/${_PROJECT}:v1', '.']
+    args: ['build', '-f','Dockerfile.devel','-t', '${_REPO}/$PROJECT_ID/${_PROJECT}:v1', '.']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['tag', '${_REPO}/$PROJECT_ID/${_PROJECT}:v1', '${_PROJECT}:latest']    
   - name: 'gcr.io/$PROJECT_ID/docker-compose'
