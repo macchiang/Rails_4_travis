@@ -30,7 +30,7 @@ steps:
       kubectl set image deployment ${_PROJECT} ${_PROJECT}=${_REPO}/$PROJECT_ID/${_PROJECT}:v1  
       kubectl rollout status deployment ${_PROJECT}
     env:
-      COUNTER=600
+    - 'COUNTER=600'
 images: ["${_REPO}/$PROJECT_ID/${_PROJECT}:v1"]  
 substitutions:
   _PROJECT: rails-4-travis
