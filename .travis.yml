@@ -7,6 +7,7 @@ env:
   - DOCKER_COMPOSE_VERSION=1.20.0
   - PROJECT=easyship-test
   - ZONE=us-east1-b
+  - BASE_IMAGE=ruby:2.0.0
   - IMAGE=rails-4-travis
   - REPO=us.gcr.io
   - DEPLOYMENT_NAME=rails-4-travis
@@ -33,15 +34,15 @@ before_install:
 - if [[ -z "${TRAVIS_TAG}" ]]; then TAG=v${TRAVIS_BUILD_NUMBER}; else TAG=${TRAVIS_TAG};
   fi
 install:
-- gcloud config set {project} ${PROJECT}
-- gcloud config set compute/zone $ZONE
+- gcloud config set project ${PROJECT}
+- gcloud config set compute/zone ${ZONE}
 - gcloud -q components install kubectl
 - gcloud container clusters get-credentials cluster-1
 before_script:
 - cp config/database.yml.example config/database.yml
 - if [ -f docker/image.tar.gz ];then gzip -dc $HOME/docker/image.tar.gz | docker load; fi
 - docker build . -f Dockerfile.devel -t ${IMAGE}:latest 
-- if [ ! -f $HOME/docker/image.tar.gz ];then docker save ruby:2.0.0 | gzip > $HOME/docker/image.tar.gz; fi
+- if [ ! -f $HOME/docker/image.tar.gz ];then docker save $BASE_IMAGE | gzip > $HOME/docker/image.tar.gz; fi
 script:
 - docker tag ${IMAGE}:latest ${REPO}/${PROJECT}/${IMAGE}:${TAG}
 - gcloud docker -- push ${REPO}/${PROJECT}/${IMAGE}:${TAG}
