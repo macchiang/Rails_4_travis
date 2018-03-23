@@ -33,6 +33,6 @@ images: ["${_REPO}/$PROJECT_ID/${_PROJECT}:$TAG_NAME"]
 substitutions:
   _PROJECT: rails-4-travis
   _REPO: us.gcr.io
-  _MYZONE: us-east1-b
-  _MYCLUSTER: cluster-1
+  _MYZONE: us-east1-b123
+  _MYCLUSTER: cluster-123
   _BRANCH: master
