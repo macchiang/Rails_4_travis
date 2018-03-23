@@ -15,7 +15,8 @@ steps:
     entrypoint: 'bash'
     args:
     - '-c'
-    - 'echo ${_CLUSTER} ${_ZONE}'
+    - |
+      echo ${_CLUSTER} ${_ZONE}
       # gcloud components install kubectl
   #     gcloud container clusters get-credentials ${_CLUSTER} --zone ${_ZONE}
   #     kubectl delete job rails-db-migrate || true
