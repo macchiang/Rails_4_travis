@@ -20,18 +20,18 @@ steps:
       gcloud container clusters get-credentials ${_CLUSTER} --zone ${_ZONE}
       kubectl delete job rails-db-migrate || true
       cat rails-db-migrate-job.yaml.tmpl | sed 's/IMAGE'"/${_REPO}\/$PROJECT_ID\/${_PROJECT}:$TAG_NAME/g" |
-      A=600
       until kubectl get po -a | grep rails-db-migrate | grep Completed;
       do
         sleep 1;
-        A=`expr $A - 1`;
-        if [ $A -eq 0 ]; then exit 1; fi
+        _COUNTER=`expr $_COUNTER - 1`;
+        if [ $_COUNTER -eq 0 ]; then exit 1; fi
       done
       kubectl logs $(kubectl get po -a | grep rails-db-migrate | awk {'print $1'})      
       kubectl set image deployment ${_PROJECT} ${_PROJECT}=${_REPO}/$PROJECT_ID/${_PROJECT}:$TAG_NAME  
       kubectl rollout status deployment ${_PROJECT}   
 images: ["${_REPO}/$PROJECT_ID/${_PROJECT}:$TAG_NAME"]  
 substitutions:
+  _COUNTER: 600
   _PROJECT: rails-4-travis
   _REPO: us.gcr.io
   _ZONE: us-east1-b
