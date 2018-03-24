@@ -4,13 +4,13 @@ steps:
   - name: 'ubuntu'
     args: ['bash','-c', 'cp config/database.yml.example config/database.yml']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-f','Dockerfile.devel','-t', '${_REPO}/$PROJECT_ID/${_PROJECT}:v1', '.']
+    args: ['build', '-f','Dockerfile.devel','-t', '${_REPO}/$PROJECT_ID/${_PROJECT}:$TAG_NAME', '.']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['tag', '${_REPO}/$PROJECT_ID/${_PROJECT}:v1', '${_PROJECT}:latest']    
+    args: ['tag', '${_REPO}/$PROJECT_ID/${_PROJECT}:$TAG_NAME', '${_PROJECT}:latest']    
   - name: 'gcr.io/$PROJECT_ID/docker-compose'
     args: ['run','test']      
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push','${_REPO}/$PROJECT_ID/${_PROJECT}:v1']  
+    args: ['push','${_REPO}/$PROJECT_ID/${_PROJECT}:$TAG_NAME']  
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
@@ -22,7 +22,7 @@ steps:
       kubectl set image deployment ${_PROJECT} ${_PROJECT}=${_REPO}/$PROJECT_ID/${_PROJECT}:v1  
       kubectl rollout status deployment ${_PROJECT}
     env:
-    - 'IMAGE=${_REPO}\/$PROJECT_ID\/${_PROJECT}:v1'
+    - 'IMAGE=${_REPO}\/$PROJECT_ID\/${_PROJECT}:$TAG_NAME'
 images: ["${_REPO}/$PROJECT_ID/${_PROJECT}:v1"]  
 substitutions:
   _PROJECT: rails-4-travis
